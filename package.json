@@ -8,6 +8,7 @@
     "dev": "concurrently \"npm run server\" \"npm start\"",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
+    "build:netlify": "ng build --configuration production",
     "start:prod": "NODE_ENV=production node server/server.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
