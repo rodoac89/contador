@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const database = require('./database');
+const database = require('./database-postgres');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

@@ -66,7 +66,6 @@ export class AuthService {
 
   checkAuthState(): void {
     const stored = localStorage.getItem('auth');
-    const hasLoggedOut = localStorage.getItem('hasLoggedOut');
     
     if (stored) {
       try {
@@ -80,14 +79,7 @@ export class AuthService {
       } catch (error) {
         localStorage.removeItem('auth');
       }
-    } else if (!hasLoggedOut) {
-      // Auto-login como admin solo si nunca ha hecho logout
-      const user: User = { username: 'admin', role: 'admin' };
-      this.authStateSignal.set({
-        isAuthenticated: true,
-        user
-      });
-      localStorage.setItem('auth', JSON.stringify({ user }));
     }
+    // Removido el auto-login automático
   }
 }
