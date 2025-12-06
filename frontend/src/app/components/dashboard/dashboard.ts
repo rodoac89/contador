@@ -32,8 +32,7 @@ import { MatchScore } from '../../models/player.model';
     MatCardModule,
     FormsModule,
     MatDialogModule,
-    MatTooltipModule,
-    LoginComponent
+    MatTooltipModule
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
