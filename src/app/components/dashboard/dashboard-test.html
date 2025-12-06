@@ -1,0 +1,17 @@
+<div>
+  <h1>Dashboard Test</h1>
+  <p>AuthService initialized: {{ authService.isAuthenticated }}</p>
+  <p>User: {{ authService.authState().user?.username || 'No user' }}</p>
+  
+  @if (!authService.isAuthenticated) {
+    <div>
+      <h2>Login Required</h2>
+      <app-login></app-login>
+    </div>
+  } @else {
+    <div>
+      <h2>Dashboard Content</h2>
+      <p>Welcome {{ authService.authState().user?.username }}!</p>
+    </div>
+  }
+</div>

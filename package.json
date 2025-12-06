@@ -3,13 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config proxy.conf.json",
-    "server": "node server/server.js",
-    "dev": "concurrently \"npm run server\" \"npm start\"",
+    "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
-    "build:netlify": "ng build --configuration production",
-    "start:prod": "NODE_ENV=production node server/server.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -38,12 +34,7 @@
     "@angular/platform-browser": "^21.0.0",
     "@angular/platform-browser-dynamic": "^21.0.1",
     "@angular/router": "^21.0.0",
-    "body-parser": "^2.2.1",
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "pg": "^8.16.3",
     "rxjs": "~7.8.0",
-    "sqlite3": "^5.1.7",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -51,10 +42,7 @@
     "@angular/build": "^21.0.1",
     "@angular/cli": "^21.0.1",
     "@angular/compiler-cli": "^21.0.0",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5",
     "@types/node": "^24.10.1",
-    "concurrently": "^9.2.1",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"

@@ -1,168 +1,139 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { Injectable, signal, computed } from '@angular/core';
 import { Player, Match, MatchScore } from '../models/player.model';
-
-interface DbPlayer {
-  id: string;
-  name: string;
-}
-
-interface DbMatch {
-  id: string;
-}
-
-interface DbMatchScore {
-  match_id: string;
-  player_id: string;
-  kills: number;
-  placement: string;
-}
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
-  private http = inject(HttpClient);
-  private apiUrl = '/api';
+  private readonly STORAGE_KEY = 'pubg-contador-data';
   
   private players = signal<Player[]>([]);
   private matches = signal<Match[]>([]);
 
-  readonly playersSignal = this.players.asReadonly();
-  readonly matchesSignal = this.matches.asReadonly();
-
-  readonly playersWithScores = computed(() => {
-    const players = this.players();
-    const matches = this.matches();
-    
-    return players.map(player => ({
-      ...player,
-      totalPoints: this.calculatePlayerPoints(player.id, matches)
-    }));
-  });
-
   constructor() {
-    // Cargar estado inicial después de que Angular esté listo
-    setTimeout(() => this.loadState(), 0);
+    this.loadState();
   }
 
-  private async loadState(): Promise<void> {
-    try {
-      const state = await firstValueFrom(
-        this.http.get<{ players: DbPlayer[], matches: DbMatch[], scores: DbMatchScore[] }>(`${this.apiUrl}/state`)
-      );
+  get playersSignal() {
+    return this.players.asReadonly();
+  }
 
-      // Convertir datos de la BD al formato de la aplicación
-      const matchesMap: { [id: string]: Match } = {};
+  get matchesSignal() {
+    return this.matches.asReadonly();
+  }
+
+  get playersWithScores() {
+    return computed(() => {
+      const currentPlayers = this.players();
+      const currentMatches = this.matches();
       
-      state.matches.forEach(match => {
-        matchesMap[match.id] = {
-          id: match.id,
-          playerScores: {}
-        };
-      });
+      return currentPlayers.map(player => ({
+        ...player,
+        totalPoints: this.calculatePlayerPoints(player.id, currentMatches)
+      }));
+    });
+  }
 
-      state.scores.forEach(score => {
-        if (matchesMap[score.match_id]) {
-          matchesMap[score.match_id].playerScores[score.player_id] = {
-            kills: score.kills,
-            placement: score.placement as 'winner' | 'second' | 'none'
-          };
-        }
-      });
-
-      this.players.set(state.players.map(p => ({ ...p, totalPoints: 0 })));
-      this.matches.set(Object.values(matchesMap));
-      console.log('Estado cargado:', { players: state.players.length, matches: state.matches.length });
+  private loadState(): void {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (stored) {
+        const data = JSON.parse(stored);
+        this.players.set(data.players || []);
+        this.matches.set(data.matches || []);
+      }
     } catch (error) {
-      console.error('Error loading state:', error);
-      // Inicializar con arrays vacíos si hay error
+      console.error('Error loading state from localStorage:', error);
       this.players.set([]);
       this.matches.set([]);
     }
   }
 
-  async addPlayer(name: string): Promise<void> {
+  private saveState(): void {
+    try {
+      const data = {
+        players: this.players(),
+        matches: this.matches()
+      };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving state to localStorage:', error);
+    }
+  }
+
+  addPlayer(name: string): void {
     const newPlayer: Player = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name,
       totalPoints: 0
     };
 
-    try {
-      await firstValueFrom(this.http.post(`${this.apiUrl}/players`, newPlayer));
-      this.players.update(players => [...players, newPlayer]);
-      
-      // Recargar estado para obtener las puntuaciones inicializadas
-      await this.loadState();
-    } catch (error) {
-      console.error('Error adding player:', error);
-    }
+    this.players.update(players => [...players, newPlayer]);
+    
+    // Agregar puntuaciones vacías para el nuevo jugador en todas las partidas existentes
+    this.matches.update(matches => 
+      matches.map(match => ({
+        ...match,
+        playerScores: {
+          ...match.playerScores,
+          [newPlayer.id]: { kills: 0, placement: 'none' }
+        }
+      }))
+    );
+
+    this.saveState();
   }
 
-  async addMatch(): Promise<void> {
+  addMatch(): void {
     const newMatch: Match = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       playerScores: {}
     };
-    
-    // Initialize scores for all players
-    this.players().forEach(player => {
-      newMatch.playerScores[player.id] = {
-        kills: 0,
-        placement: 'none'
-      };
+
+    // Inicializar puntuaciones para todos los jugadores
+    const currentPlayers = this.players();
+    currentPlayers.forEach(player => {
+      newMatch.playerScores[player.id] = { kills: 0, placement: 'none' };
     });
 
-    try {
-      await firstValueFrom(this.http.post(`${this.apiUrl}/matches`, { id: newMatch.id }));
-      this.matches.update(matches => [...matches, newMatch]);
-      
-      // Recargar estado para obtener las puntuaciones inicializadas
-      await this.loadState();
-    } catch (error) {
-      console.error('Error adding match:', error);
-    }
+    this.matches.update(matches => [...matches, newMatch]);
+    this.saveState();
   }
 
-  async deleteMatch(matchId: string): Promise<void> {
-    try {
-      await firstValueFrom(this.http.delete(`${this.apiUrl}/matches/${matchId}`));
-      this.matches.update(matches => matches.filter(m => m.id !== matchId));
-    } catch (error) {
-      console.error('Error deleting match:', error);
-    }
+  updateMatchScore(matchId: string, playerId: string, score: MatchScore): void {
+    this.matches.update(matches => 
+      matches.map(match => {
+        if (match.id === matchId) {
+          return {
+            ...match,
+            playerScores: {
+              ...match.playerScores,
+              [playerId]: score
+            }
+          };
+        }
+        return match;
+      })
+    );
+    this.saveState();
   }
 
-  async updateMatchScore(matchId: string, playerId: string, score: MatchScore): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.http.put(`${this.apiUrl}/match-scores`, {
-          matchId,
-          playerId,
-          kills: score.kills,
-          placement: score.placement
-        })
-      );
+  deletePlayer(playerId: string): void {
+    this.players.update(players => players.filter(p => p.id !== playerId));
+    this.matches.update(matches => 
+      matches.map(match => ({
+        ...match,
+        playerScores: Object.fromEntries(
+          Object.entries(match.playerScores).filter(([id]) => id !== playerId)
+        )
+      }))
+    );
+    this.saveState();
+  }
 
-      this.matches.update(matches => 
-        matches.map(match => {
-          if (match.id === matchId) {
-            return {
-              ...match,
-              playerScores: {
-                ...match.playerScores,
-                [playerId]: score
-              }
-            };
-          }
-          return match;
-        })
-      );
-    } catch (error) {
-      console.error('Error updating match score:', error);
-    }
+  deleteMatch(matchId: string): void {
+    this.matches.update(matches => matches.filter(m => m.id !== matchId));
+    this.saveState();
   }
 
   private calculatePlayerPoints(playerId: string, matches: Match[]): number {
@@ -180,22 +151,5 @@ export class GameService {
       
       return total + points;
     }, 0);
-  }
-
-  async deletePlayer(playerId: string): Promise<void> {
-    try {
-      await firstValueFrom(this.http.delete(`${this.apiUrl}/players/${playerId}`));
-      this.players.update(players => players.filter(p => p.id !== playerId));
-      this.matches.update(matches => 
-        matches.map(match => ({
-          ...match,
-          playerScores: Object.fromEntries(
-            Object.entries(match.playerScores).filter(([id]) => id !== playerId)
-          )
-        }))
-      );
-    } catch (error) {
-      console.error('Error deleting player:', error);
-    }
   }
 }
