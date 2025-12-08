@@ -1,5 +1,13 @@
 <mat-toolbar color="primary">
     <span>PUBG Contador de Puntos</span>
+    @if (loading) {
+    <mat-icon class="loading-spinner">sync</mat-icon>
+    <span>Cargando...</span>
+    }
+    @if (error) {
+    <mat-icon color="warn">error</mat-icon>
+    <span class="error-text">{{ error }}</span>
+    }
     <span class="spacer"></span>
     <span class="user-info">
         {{ authService.authState().user?.username }}

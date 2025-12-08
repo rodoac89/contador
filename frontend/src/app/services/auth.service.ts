@@ -61,7 +61,7 @@ export class AuthService {
   }
 
   private getStoredPassword(): string {
-    return localStorage.getItem('adminPassword') || 'admin123';
+    return localStorage.getItem('adminPassword') || '%v&S9Y#ZR8liMl';
   }
 
   checkAuthState(): void {

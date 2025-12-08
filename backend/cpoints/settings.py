@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+DATE_FORMAT = 'd/m/Y'
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,9 +14,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-23v(z24j2ev07ihftj22&_y-mmw0)=pghp-xtq1ets=gv)wpgk'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', True)
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.getenv('URL_HOST') if os.getenv('URL_HOST') is not None else "127.0.0.1"]
 
 
 # Application definition
@@ -26,6 +28,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+    'drf_yasg',
     'apps.core',
 ]
 
@@ -37,7 +43,36 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'rest_framework.authentication.TokenAuthentication',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+# CORS settings
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CSRF_TRUSTED_ORIGINS = ['https://' + (os.getenv('URL_HOST') if os.getenv('URL_HOST') is not None else '127.0.0.1')]
 
 ROOT_URLCONF = 'cpoints.urls'
 

@@ -1,42 +1,63 @@
 {
-  // For more information, visit: https://go.microsoft.com/fwlink/?LinkId=733558
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "start",
+      "label": "start frontend",
+      "type": "shell",
       "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
+      "command": "cd frontend && npm start",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": [
+        {
+          "owner": "typescript",
+          "source": "ts",
+          "applyTo": "closedDocuments",
+          "fileLocation": ["relative", "${workspaceFolder}/frontend"],
+          "pattern": {
+            "regexp": "^(.*)\\((\\d+),(\\d+)\\): (error|warning) TS(\\d+): (.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "code": 5,
+            "message": 6
           },
-          "endsPattern": {
-            "regexp": "bundle generation complete"
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^.*webpack.*",
+            "endsPattern": "^.*compiled successfully.*"
           }
+        }
+      ]
+    },
+    {
+      "label": "start sqlite server",
+      "type": "shell",
+      "isBackground": true,
+      "command": "cd frontend && node dev-server.js",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": false
+      },
+      "problemMatcher": [],
+      "options": {
+        "env": {
+          "NODE_ENV": "development"
         }
       }
     },
     {
-      "type": "npm",
-      "script": "test",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "(.*?)"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation complete"
-          }
-        }
-      }
+      "label": "start full development environment",
+      "dependsOn": [
+        "start sqlite server",
+        "start angular dev server"
+      ],
+      "dependsOrder": "parallel"
     }
   ]
 }

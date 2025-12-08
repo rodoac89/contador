@@ -11,10 +11,7 @@ import {
   createBlockScrollStrategy,
   createGlobalPositionStrategy,
   createOverlayRef
-} from "./chunk-PZM57EAN.js";
-import {
-  CdkScrollable
-} from "./chunk-KRIRPNTS.js";
+} from "./chunk-OQV25LIM.js";
 import {
   A11yModule,
   ESCAPE,
@@ -24,25 +21,29 @@ import {
   _IdGenerator,
   _animationsDisabled,
   hasModifierKey
-} from "./chunk-5FNHETKM.js";
-import "./chunk-AIEYJCOW.js";
-import "./chunk-PZ6ZF4MX.js";
+} from "./chunk-RPYHMYUX.js";
 import {
   _getFocusedElementPierceShadowDom
 } from "./chunk-GWBU7KI5.js";
-import "./chunk-DWYAZJCO.js";
+import "./chunk-5H6MBJA4.js";
+import "./chunk-AIEYJCOW.js";
+import {
+  CdkScrollable
+} from "./chunk-SO4QFZQB.js";
 import "./chunk-GUGIMSVJ.js";
+import "./chunk-XYBFVC5N.js";
+import {
+  coerceNumberProperty
+} from "./chunk-MEP666BX.js";
+import {
+  Platform
+} from "./chunk-FHXNRTFX.js";
 import {
   BidiModule,
   Directionality
-} from "./chunk-MCPC3Z45.js";
-import {
-  coerceNumberProperty
-} from "./chunk-UFLLRZSQ.js";
-import {
-  Platform
-} from "./chunk-MVPPTNOC.js";
-import "./chunk-HUOUGWUH.js";
+} from "./chunk-AOQ4RCD5.js";
+import "./chunk-7LA4MYMM.js";
+import "./chunk-UC72YTJX.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -58,22 +59,13 @@ import {
   NgModule,
   NgZone,
   Renderer2,
-  ReplaySubject,
-  Subject,
   TemplateRef,
   ViewChild,
   ViewEncapsulation,
-  __spreadProps,
-  __spreadValues,
   afterNextRender,
-  defer,
-  filter,
   inject,
-  merge,
   setClassMetadata,
   signal,
-  startWith,
-  take,
   ɵɵHostDirectivesFeature,
   ɵɵInheritDefinitionFeature,
   ɵɵNgOnChangesFeature,
@@ -93,7 +85,18 @@ import {
   ɵɵqueryRefresh,
   ɵɵtemplate,
   ɵɵviewQuery
-} from "./chunk-LWYXNDEJ.js";
+} from "./chunk-WKLQYTUL.js";
+import {
+  ReplaySubject,
+  Subject,
+  __spreadProps,
+  __spreadValues,
+  defer,
+  filter,
+  merge,
+  startWith,
+  take
+} from "./chunk-PJVWDKLX.js";
 
 // node_modules/@angular/cdk/fesm2022/dialog.mjs
 function CdkDialogContainer_ng_template_0_Template(rf, ctx) {

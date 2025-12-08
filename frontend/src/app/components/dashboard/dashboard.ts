@@ -16,7 +16,7 @@ import { AuthService } from '../../services/auth.service';
 import { AddPlayerDialogComponent } from '../add-player-dialog.component';
 import { LoginComponent } from '../login/login';
 import { ChangeCredentialsDialogComponent } from '../change-credentials-dialog.component';
-import { MatchScore } from '../../models/player.model';
+import { MatchScore, Match } from '../../models/player.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -44,6 +44,8 @@ export class Dashboard implements OnInit {
 
   ngOnInit(): void {
     this.authService.checkAuthState();
+    // Ensure data is loaded when component initializes
+    this.gameService.refreshData();
   }
 
   get players() {
@@ -54,8 +56,16 @@ export class Dashboard implements OnInit {
     return this.gameService.matchesSignal();
   }
 
+  get loading() {
+    return this.gameService.loadingSignal();
+  }
+
+  get error() {
+    return this.gameService.errorSignal();
+  }
+
   get displayedColumns(): string[] {
-    const playerColumns = this.players.map(p => p.id);
+    const playerColumns = this.players.map((p: any) => p.id);
     const baseColumns = ['matchNumber', ...playerColumns];
     return this.authService.isAdmin ? [...baseColumns, 'actions'] : baseColumns;
   }
@@ -67,49 +77,49 @@ export class Dashboard implements OnInit {
   openAddPlayerDialog(): void {
     const dialogRef = this.dialog.open(AddPlayerDialogComponent);
     
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
       if (result) {
-        this.gameService.addPlayer(result);
+        await this.gameService.addPlayer(result);
       }
     });
   }
 
-  addMatch(): void {
-    this.gameService.addMatch();
+  async addMatch(): Promise<void> {
+    await this.gameService.addMatch();
   }
 
-  deleteMatch(matchId: string): void {
-    this.gameService.deleteMatch(matchId);
+  async deleteMatch(matchId: string): Promise<void> {
+    await this.gameService.deleteMatch(matchId);
   }
 
-  updateKills(matchId: string, playerId: string, kills: number): void {
-    const match = this.matches.find(m => m.id === matchId);
+  async updateKills(matchId: string, playerId: string, kills: number): Promise<void> {
+    const match = this.matches.find((m: Match) => m.id === matchId);
     if (match) {
       const currentScore = this.getPlayerScore(matchId, playerId);
-      this.gameService.updateMatchScore(matchId, playerId, {
+      await this.gameService.updateMatchScore(matchId, playerId, {
         ...currentScore,
         kills: Math.max(0, Number(kills) || 0)
       });
     }
   }
 
-  incrementKills(matchId: string, playerId: string): void {
+  async incrementKills(matchId: string, playerId: string): Promise<void> {
     const currentScore = this.getPlayerScore(matchId, playerId);
-    this.updateKills(matchId, playerId, currentScore.kills + 1);
+    await this.updateKills(matchId, playerId, currentScore.kills + 1);
   }
 
-  decrementKills(matchId: string, playerId: string): void {
+  async decrementKills(matchId: string, playerId: string): Promise<void> {
     const currentScore = this.getPlayerScore(matchId, playerId);
-    this.updateKills(matchId, playerId, currentScore.kills - 1);
+    await this.updateKills(matchId, playerId, currentScore.kills - 1);
   }
 
-  setPlacement(matchId: string, playerId: string, placement: 'winner' | 'second' | 'none'): void {
-    const match = this.matches.find(m => m.id === matchId);
+  async setPlacement(matchId: string, playerId: string, placement: 'winner' | 'second' | 'none'): Promise<void> {
+    const match = this.matches.find((m: Match) => m.id === matchId);
     if (match) {
       const currentScore = this.getPlayerScore(matchId, playerId);
       const newPlacement = currentScore.placement === placement ? 'none' : placement;
 
-      this.gameService.updateMatchScore(matchId, playerId, {
+      await this.gameService.updateMatchScore(matchId, playerId, {
         ...currentScore,
         placement: newPlacement
       });
@@ -117,7 +127,7 @@ export class Dashboard implements OnInit {
   }
 
   getWinner(matchId: string): string | undefined {
-    const match = this.matches.find(m => m.id === matchId);
+    const match = this.matches.find((m: Match) => m.id === matchId);
     if (!match) return undefined;
     return Object.keys(match.playerScores).find(
       playerId => match.playerScores[playerId].placement === 'winner'
@@ -125,7 +135,7 @@ export class Dashboard implements OnInit {
   }
 
   getSecondPlace(matchId: string): string | undefined {
-    const match = this.matches.find(m => m.id === matchId);
+    const match = this.matches.find((m: Match) => m.id === matchId);
     if (!match) return undefined;
     return Object.keys(match.playerScores).find(
       playerId => match.playerScores[playerId].placement === 'second'
@@ -133,7 +143,7 @@ export class Dashboard implements OnInit {
   }
 
   getPlayerScore(matchId: string, playerId: string): MatchScore {
-    const match = this.matches.find(m => m.id === matchId);
+    const match = this.matches.find((m: Match) => m.id === matchId);
     return match?.playerScores[playerId] || { kills: 0, placement: 'none' };
   }
 
@@ -145,9 +155,9 @@ export class Dashboard implements OnInit {
     this.dialog.open(ChangeCredentialsDialogComponent);
   }
 
-  deletePlayer(playerId: string): void {
+  async deletePlayer(playerId: string): Promise<void> {
     if (confirm('¿Estás seguro de que deseas eliminar este jugador? Esto eliminará todos sus registros de partidas.')) {
-      this.gameService.deletePlayer(playerId);
+      await this.gameService.deletePlayer(playerId);
     }
   }
 

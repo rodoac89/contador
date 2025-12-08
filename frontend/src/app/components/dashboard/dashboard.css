@@ -2,9 +2,25 @@
   flex: 1 1 auto;
 }
 
+.loading-spinner {
+  animation: spin 2s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-text {
+  color: #f44336;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
 .container {
   padding: 20px;
-  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -39,12 +55,23 @@
 
 .table-container {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
   margin-bottom: 20px;
+  position: relative;
 }
 
 table {
   width: 100%;
   background: white;
+}
+
+.mat-mdc-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .player-column {
