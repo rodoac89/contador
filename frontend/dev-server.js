@@ -73,15 +73,13 @@ app.get('/api/players', (req, res) => {
 app.post('/api/players', (req, res) => {
   try {
     const { id, name } = req.body;
-    
+
     if (!id || !name) {
       return res.status(400).json({ error: 'ID and name are required' });
     }
 
     const stmt = db.prepare('INSERT INTO players (id, name) VALUES (?, ?)');
-    const result = stmt.run(id, name);
-    
-    const newPlayer = db.prepare('SELECT * FROM players WHERE id = ?').get(id);
+    const result = stmt.run(id, name);    const newPlayer = db.prepare('SELECT * FROM players WHERE id = ?').get(id);
     res.status(201).json(newPlayer);
   } catch (error) {
     console.error('Error creating player:', error);

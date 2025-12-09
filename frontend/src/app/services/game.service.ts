@@ -1,13 +1,13 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Player, Match, MatchScore } from '../models/player.model';
-import { SqliteService } from './sqlite.service';
+import { DatabaseService } from './db.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
-  private readonly sqliteService = inject(SqliteService);
+  private readonly databaseService = inject(DatabaseService);
   
   private players = signal<Player[]>([]);
   private matches = signal<Match[]>([]);
@@ -48,22 +48,22 @@ export class GameService {
       this.loading.set(true);
       this.error.set(null);
       
-      console.log('Attempting to connect to SQLite server...');
+      console.log('Attempting to connect to database server...');
       
       // Test connection first
-      await firstValueFrom(this.sqliteService.checkHealth());
-      console.log('SQLite server connection successful');
+      await firstValueFrom(this.databaseService.checkHealth());
+      console.log('Database server connection successful');
       
       const [players, matches] = await Promise.all([
-        firstValueFrom(this.sqliteService.getPlayers()),
-        firstValueFrom(this.sqliteService.getMatches())
+        firstValueFrom(this.databaseService.getPlayers()),
+        firstValueFrom(this.databaseService.getMatches())
       ]);
       
       this.players.set(players || []);
       this.matches.set(matches || []);
-      console.log('Data loaded successfully:', { players: players?.length, matches: matches?.length });
+      console.log('Data loaded successfully loadData:', { players: players?.length, matches: matches?.length });
     } catch (error) {
-      console.error('Error loading data from SQLite:', error);
+      console.error('Error loading data from database:', error);
       this.error.set('Error loading data from database');
       // Fallback: try to load from localStorage
       this.loadFromLocalStorage();
@@ -94,12 +94,11 @@ export class GameService {
       this.error.set(null);
 
       const newPlayer: Player = {
-        id: crypto.randomUUID(),
         name,
         totalPoints: 0
       };
 
-      const createdPlayer = await firstValueFrom(this.sqliteService.createPlayer(newPlayer));
+      const createdPlayer = await firstValueFrom(this.databaseService.createPlayer(newPlayer));
       
       if (createdPlayer) {
         this.players.update(players => [...players, createdPlayer]);
@@ -125,10 +124,10 @@ export class GameService {
       // Inicializar puntuaciones para todos los jugadores
       const currentPlayers = this.players();
       currentPlayers.forEach(player => {
-        newMatch.playerScores[player.id] = { kills: 0, placement: 'none' };
+        newMatch.playerScores[player.name] = { kills: 0, placement: 'none' };
       });
 
-      const createdMatch = await firstValueFrom(this.sqliteService.createMatch(newMatch));
+      const createdMatch = await firstValueFrom(this.databaseService.createMatch(newMatch));
       
       if (createdMatch) {
         this.matches.update(matches => [...matches, createdMatch]);
@@ -166,12 +165,12 @@ export class GameService {
       const currentMatch = this.matches().find(m => m.id === matchId);
       if (currentMatch) {
         // Recrear la partida en la base de datos
-        await firstValueFrom(this.sqliteService.deleteMatch(matchId));
-        const updatedMatch = await firstValueFrom(this.sqliteService.createMatch(currentMatch));
+        await firstValueFrom(this.databaseService.deleteMatch(matchId));
+        const updatedMatch = await firstValueFrom(this.databaseService.createMatch(currentMatch));
         
         if (updatedMatch) {
           // Recargar los jugadores para obtener los puntos actualizados
-          const updatedPlayers = await firstValueFrom(this.sqliteService.getPlayers());
+          const updatedPlayers = await firstValueFrom(this.databaseService.getPlayers());
           this.players.set(updatedPlayers || []);
         }
       }
@@ -190,9 +189,9 @@ export class GameService {
       this.loading.set(true);
       this.error.set(null);
 
-      await firstValueFrom(this.sqliteService.deletePlayer(playerId));
+      await firstValueFrom(this.databaseService.deletePlayer(playerId));
       
-      this.players.update(players => players.filter(p => p.id !== playerId));
+      this.players.update(players => players.filter(p => p.name !== playerId));
       this.matches.update(matches => 
         matches.map(match => ({
           ...match,
@@ -214,12 +213,12 @@ export class GameService {
       this.loading.set(true);
       this.error.set(null);
 
-      await firstValueFrom(this.sqliteService.deleteMatch(matchId));
+      await firstValueFrom(this.databaseService.deleteMatch(matchId));
       
       this.matches.update(matches => matches.filter(m => m.id !== matchId));
       
       // Recargar los jugadores para obtener los puntos actualizados
-      const updatedPlayers = await firstValueFrom(this.sqliteService.getPlayers());
+      const updatedPlayers = await firstValueFrom(this.databaseService.getPlayers());
       this.players.set(updatedPlayers || []);
     } catch (error) {
       console.error('Error deleting match:', error);
@@ -235,7 +234,7 @@ export class GameService {
 
   async checkDatabaseConnection(): Promise<boolean> {
     try {
-      const health = await firstValueFrom(this.sqliteService.checkHealth());
+      const health = await firstValueFrom(this.databaseService.checkHealth());
       return health?.status === 'OK';
     } catch (error) {
       console.error('Database connection check failed:', error);

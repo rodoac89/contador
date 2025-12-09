@@ -30,12 +30,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_auth',
-    'drf_yasg',
+    'dj_rest_auth',
     'apps.core',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -43,8 +43,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'rest_framework.authentication.TokenAuthentication',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 # CORS settings
@@ -72,7 +70,20 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://' + (os.getenv('URL_HOST') if os.getenv('URL_HOST') is not None else '127.0.0.1')]
+# Rest Framework settings
+
+LOGIN_URL = 'rest_framework:login'
+
+LOGOUT_URL = 'rest_framework:logout'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+CSRF_TRUSTED_ORIGINS = ['http://' + (os.getenv('URL_HOST') if os.getenv('URL_HOST') is not None else '127.0.0.1')]
 
 ROOT_URLCONF = 'cpoints.urls'
 

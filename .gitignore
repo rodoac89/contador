@@ -1,5 +1,17 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
+# Sqlite database files
+*.sqlite3
+*.db
+
+
+# Python
+*/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
 # Compiled output
 /dist
 /tmp
@@ -36,6 +48,7 @@ yarn-error.log
 
 # Miscellaneous
 /.angular/cache
+*/.angular
 .sass-cache/
 /connect.lock
 /coverage

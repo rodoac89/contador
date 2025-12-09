@@ -1,12 +1,11 @@
 export interface Player {
-  id: string;
   name: string;
   totalPoints: number;
 }
 
 export interface Match {
   id: string;
-  playerScores: { [playerId: string]: MatchScore };
+  playerScores: { [playerName: string]: MatchScore };
 }
 
 export interface MatchScore {

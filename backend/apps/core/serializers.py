@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import Match, PlayerProfile
 
 
 class UserDataSerializer(serializers.Serializer):
@@ -12,18 +13,38 @@ class UserDataSerializer(serializers.Serializer):
     class Meta:
         model = User
 
-class PlayerProfileSerializer(serializers.Serializer):
+class PlayerProfileSerializer(serializers.ModelSerializer):
+    totalPoints = serializers.IntegerField(source='total_points')
+    
     class Meta:
-        model = 'PlayerProfile'
-        fields = '__all__'
+        model = PlayerProfile
+        fields = ['name', 'totalPoints']
 
-class MatchRecordSerializer(serializers.Serializer):
-    class Meta:
-        model = 'MatchRecord'
-        fields = '__all__'
+class MatchRecordSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source='match_id')
+    updated_at = serializers.DateTimeField(source='match_date')
+    playerScores = serializers.SerializerMethodField()
 
-class MatchSerializer(serializers.Serializer):
     class Meta:
-        model = 'Match'
+        model = Match
+        fields = ['id', 'updated_at', 'playerScores']
+
+    def get_playerScores(self, obj:Match):
+        records = obj.matchrecord_set.select_related('player_obj').all()
+        scores = {}
+        for record in records:
+            player_name = record.player_obj.name
+            placement = record.placement if record.placement else 'none'
+            scores[player_name] = {
+                'kills': record.kills,
+                'placement': placement
+            }
+        return scores
+
+    
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
         fields = '__all__'
     

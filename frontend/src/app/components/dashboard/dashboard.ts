@@ -65,7 +65,7 @@ export class Dashboard implements OnInit {
   }
 
   get displayedColumns(): string[] {
-    const playerColumns = this.players.map((p: any) => p.id);
+    const playerColumns = this.players.map((p: any) => p.name);
     const baseColumns = ['matchNumber', ...playerColumns];
     return this.authService.isAdmin ? [...baseColumns, 'actions'] : baseColumns;
   }
@@ -94,7 +94,7 @@ export class Dashboard implements OnInit {
 
   async updateKills(matchId: string, playerId: string, kills: number): Promise<void> {
     const match = this.matches.find((m: Match) => m.id === matchId);
-    if (match) {
+    if (match && match.playerScores) {
       const currentScore = this.getPlayerScore(matchId, playerId);
       await this.gameService.updateMatchScore(matchId, playerId, {
         ...currentScore,
@@ -115,7 +115,7 @@ export class Dashboard implements OnInit {
 
   async setPlacement(matchId: string, playerId: string, placement: 'winner' | 'second' | 'none'): Promise<void> {
     const match = this.matches.find((m: Match) => m.id === matchId);
-    if (match) {
+    if (match && match.playerScores) {
       const currentScore = this.getPlayerScore(matchId, playerId);
       const newPlacement = currentScore.placement === placement ? 'none' : placement;
 
@@ -128,23 +128,26 @@ export class Dashboard implements OnInit {
 
   getWinner(matchId: string): string | undefined {
     const match = this.matches.find((m: Match) => m.id === matchId);
-    if (!match) return undefined;
+    if (!match || !match.playerScores) return undefined;
     return Object.keys(match.playerScores).find(
-      playerId => match.playerScores[playerId].placement === 'winner'
+      playerId => match.playerScores[playerId]?.placement === 'winner'
     );
   }
 
   getSecondPlace(matchId: string): string | undefined {
     const match = this.matches.find((m: Match) => m.id === matchId);
-    if (!match) return undefined;
+    if (!match || !match.playerScores) return undefined;
     return Object.keys(match.playerScores).find(
-      playerId => match.playerScores[playerId].placement === 'second'
+      playerId => match.playerScores[playerId]?.placement === 'second'
     );
   }
 
   getPlayerScore(matchId: string, playerId: string): MatchScore {
     const match = this.matches.find((m: Match) => m.id === matchId);
-    return match?.playerScores[playerId] || { kills: 0, placement: 'none' };
+    if (!match || !match.playerScores || !match.playerScores[playerId]) {
+      return { kills: 0, placement: 'none' };
+    }
+    return match.playerScores[playerId];
   }
 
   logout(): void {
