@@ -121,8 +121,8 @@ def get_connection_string():
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('POSTGRES_DB', 'cpoints'),
             'USER': os.getenv('POSTGRES_USER', 'cpoints_user'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'cpoints_password'),
-            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'mY48%#CxzE912'),
+            'HOST': os.getenv('POSTGRES_HOST', '172.20.120.234'),
             'PORT': os.getenv('POSTGRES_PORT', '5432'),
         }
     return connection_string
