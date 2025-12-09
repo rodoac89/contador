@@ -108,10 +108,10 @@ WSGI_APPLICATION = 'cpoints.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-def get_connection_string():
+def get_connection_string(type_db='default'):
 
     connection_string = {}
-    if DEBUG:
+    if type_db == 'default':
         connection_string = {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
@@ -128,7 +128,7 @@ def get_connection_string():
     return connection_string
 
 DATABASES = {
-    'default': get_connection_string()
+    'default': get_connection_string('psql')
 }
 
 
