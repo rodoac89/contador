@@ -31,7 +31,7 @@ export class DatabaseService {
 
   // Match endpoints
   getMatches(): Observable<Match[]> {
-    return this.http.get<any[]>(`${this.API_BASE_URL}/match/records`).pipe(
+    return this.http.get<any[]>(`${this.API_BASE_URL}/match/records/`).pipe(
       map(matches => matches.map(match => ({
         id: match.id,
         playerScores: match.playerScores
@@ -40,11 +40,11 @@ export class DatabaseService {
   }
 
   createMatch(match: Match): Observable<Match> {
-    return this.http.post<Match>(`${this.API_BASE_URL}/match/create`, match);
+    return this.http.post<Match>(`${this.API_BASE_URL}/match/create/`, match);
   }
 
   deleteMatch(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.API_BASE_URL}/matches/${id}`);
+    return this.http.delete<void>(`${this.API_BASE_URL}/match/${id}`);
   }
 
   // Health check

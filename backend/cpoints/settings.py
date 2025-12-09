@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-23v(z24j2ev07ihftj22&_y-mmw0)=pghp-xtq1ets=gv)wpgk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [os.getenv('URL_HOST') if os.getenv('URL_HOST') is not None else "127.0.0.1"]
+ALLOWED_HOSTS = ['pubg.db.rodonet.work', '127.0.0.1']
 
 
 # Application definition

@@ -96,21 +96,21 @@ app.put('/api/players/:id', (req, res) => {
   try {
     const { id } = req.params;
     const { name, totalPoints } = req.body;
-    
+
     const stmt = db.prepare(`
-      UPDATE players 
-      SET name = COALESCE(?, name), 
+      UPDATE players
+      SET name = COALESCE(?, name),
           totalPoints = COALESCE(?, totalPoints),
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
-    
+
     const result = stmt.run(name, totalPoints, id);
-    
+
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Player not found' });
     }
-    
+
     const updatedPlayer = db.prepare('SELECT * FROM players WHERE id = ?').get(id);
     res.json(updatedPlayer);
   } catch (error) {
@@ -123,7 +123,7 @@ app.put('/api/players/:id', (req, res) => {
 app.delete('/api/players/:id', (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Start transaction
     const deleteTransaction = db.transaction(() => {
       // Delete related match scores first
@@ -132,13 +132,13 @@ app.delete('/api/players/:id', (req, res) => {
       const result = db.prepare('DELETE FROM players WHERE id = ?').run(id);
       return result;
     });
-    
+
     const result = deleteTransaction();
-    
+
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Player not found' });
     }
-    
+
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting player:', error);
@@ -155,13 +155,13 @@ app.get('/api/matches', (req, res) => {
       FROM matches
       ORDER BY created_at DESC
     `).all();
-    
+
     // Get match scores separately
     const matchScores = db.prepare(`
       SELECT match_id, player_id, kills, placement
       FROM match_scores
     `).all();
-    
+
     // Group scores by match_id
     const scoresByMatch = matchScores.reduce((acc, score) => {
       if (!acc[score.match_id]) {
@@ -173,7 +173,7 @@ app.get('/api/matches', (req, res) => {
       };
       return acc;
     }, {});
-    
+
     // Combine matches with their scores
     const parsedMatches = matches.map(match => ({
       id: match.id,
@@ -181,7 +181,7 @@ app.get('/api/matches', (req, res) => {
       updated_at: match.updated_at,
       playerScores: scoresByMatch[match.id] || {}
     }));
-    
+
     res.json(parsedMatches);
   } catch (error) {
     console.error('Error fetching matches:', error);
@@ -193,7 +193,7 @@ app.get('/api/matches', (req, res) => {
 app.post('/api/matches', (req, res) => {
   try {
     const { id, playerScores } = req.body;
-    
+
     if (!id || !playerScores) {
       return res.status(400).json({ error: 'ID and playerScores are required' });
     }
@@ -202,54 +202,54 @@ app.post('/api/matches', (req, res) => {
       // Create match
       const matchStmt = db.prepare('INSERT INTO matches (id) VALUES (?)');
       matchStmt.run(id);
-      
+
       // Create match scores
       const scoreStmt = db.prepare(`
-        INSERT INTO match_scores (match_id, player_id, kills, placement) 
+        INSERT INTO match_scores (match_id, player_id, kills, placement)
         VALUES (?, ?, ?, ?)
       `);
-      
+
       for (const [playerId, score] of Object.entries(playerScores)) {
         scoreStmt.run(id, playerId, score.kills, score.placement);
       }
-      
+
       // Update player total points
       const updatePlayerStmt = db.prepare(`
-        UPDATE players 
+        UPDATE players
         SET totalPoints = (
           SELECT COALESCE(SUM(
-            kills + 
+            kills +
             CASE placement
               WHEN 'winner' THEN 3
               WHEN 'second' THEN 1
               ELSE 0
             END
           ), 0)
-          FROM match_scores 
+          FROM match_scores
           WHERE player_id = players.id
         ),
         updated_at = CURRENT_TIMESTAMP
       `);
-      
+
       updatePlayerStmt.run();
     });
-    
+
     createMatchTransaction();
-    
+
     // Fetch the created match
     const newMatch = db.prepare(`
       SELECT id, created_at, updated_at
       FROM matches
       WHERE id = ?
     `).get(id);
-    
+
     // Get match scores for this match
     const matchScores = db.prepare(`
       SELECT player_id, kills, placement
       FROM match_scores
       WHERE match_id = ?
     `).all(id);
-    
+
     const parsedMatch = {
       id: newMatch.id,
       created_at: newMatch.created_at,
@@ -262,7 +262,7 @@ app.post('/api/matches', (req, res) => {
         return acc;
       }, {})
     };
-    
+
     res.status(201).json(parsedMatch);
   } catch (error) {
     console.error('Error creating match:', error);
@@ -278,42 +278,42 @@ app.post('/api/matches', (req, res) => {
 app.delete('/api/matches/:id', (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const deleteMatchTransaction = db.transaction(() => {
       // Delete match scores first
       db.prepare('DELETE FROM match_scores WHERE match_id = ?').run(id);
       // Delete the match
       const result = db.prepare('DELETE FROM matches WHERE id = ?').run(id);
-      
+
       // Recalculate player points
       const updatePlayerStmt = db.prepare(`
-        UPDATE players 
+        UPDATE players
         SET totalPoints = (
           SELECT COALESCE(SUM(
-            kills + 
+            kills +
             CASE placement
               WHEN 'winner' THEN 3
               WHEN 'second' THEN 1
               ELSE 0
             END
           ), 0)
-          FROM match_scores 
+          FROM match_scores
           WHERE player_id = players.id
         ),
         updated_at = CURRENT_TIMESTAMP
       `);
-      
+
       updatePlayerStmt.run();
-      
+
       return result;
     });
-    
+
     const result = deleteMatchTransaction();
-    
+
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Match not found' });
     }
-    
+
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting match:', error);
@@ -323,10 +323,10 @@ app.delete('/api/matches/:id', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    database: 'connected' 
+    database: 'connected'
   });
 });
 

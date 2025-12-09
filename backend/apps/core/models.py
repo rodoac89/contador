@@ -22,7 +22,9 @@ class MatchRecord(models.Model):
     
 class Match(models.Model):
     match_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    match_date = models.DateTimeField(auto_now_add=True)
+    match_date = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.match_id)[-6:]

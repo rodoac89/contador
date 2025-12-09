@@ -51,7 +51,7 @@ def delete_player(player_name):
 # Match Management
 def get_match_by_id(match_id):
     try:
-        match = Match.objects.get(id=match_id)
+        match = Match.objects.get(match_id=match_id)
         return match
     except Match.DoesNotExist:
         return None

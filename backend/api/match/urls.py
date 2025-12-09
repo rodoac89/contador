@@ -4,6 +4,6 @@ from .apiviews import MatchRecordView, MatchView
 
 urlpatterns = [
     path('records/', MatchRecordView.as_view()),
-    path('all/', MatchView.as_view()),
-    path('create', MatchView.as_view()),    
+    path('<str:match_id>', MatchView.as_view()),
+    path('create/', MatchView.as_view()),  
 ]
