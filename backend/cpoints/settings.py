@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-23v(z24j2ev07ihftj22&_y-mmw0)=pghp-xtq1ets=gv)wpgk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['pubg.db.rodonet.work', '127.0.0.1']
+ALLOWED_HOSTS = ['pubg.rodonet.work', 'db.pubg.rodonet.work', '127.0.0.1', 'localhost', 'backend']
 
 
 # Application definition
@@ -70,6 +70,8 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Rest Framework settings
 
 LOGIN_URL = 'rest_framework:login'
@@ -83,7 +85,6 @@ REST_FRAMEWORK = {
     ]
 }
 
-CSRF_TRUSTED_ORIGINS = ['http://' + (os.getenv('URL_HOST') if os.getenv('URL_HOST') is not None else '127.0.0.1')]
 
 ROOT_URLCONF = 'cpoints.urls'
 
@@ -122,7 +123,7 @@ def get_connection_string(type_db='default'):
             'NAME': os.getenv('POSTGRES_DB', 'cpoints'),
             'USER': os.getenv('POSTGRES_USER', 'cpoints_user'),
             'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'mY48%#CxzE912'),
-            'HOST': os.getenv('POSTGRES_HOST', '172.20.120.234'),
+            'HOST': os.getenv('POSTGRES_HOST', '172.22.240.156'),
             'PORT': os.getenv('POSTGRES_PORT', '5432'),
         }
     return connection_string
@@ -167,3 +168,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

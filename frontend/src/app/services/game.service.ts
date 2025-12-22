@@ -164,9 +164,8 @@ export class GameService {
       // Obtener la partida completa actualizada
       const currentMatch = this.matches().find(m => m.id === matchId);
       if (currentMatch) {
-        // Recrear la partida en la base de datos
-        await firstValueFrom(this.databaseService.deleteMatch(matchId));
-        const updatedMatch = await firstValueFrom(this.databaseService.createMatch(currentMatch));
+        // Actualizar la partida en la base de datos
+        const updatedMatch = await firstValueFrom(this.databaseService.updateMatch(matchId, currentMatch));
         
         if (updatedMatch) {
           // Recargar los jugadores para obtener los puntos actualizados

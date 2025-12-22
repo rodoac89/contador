@@ -18,7 +18,7 @@ class MatchRecord(models.Model):
     date_updated = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.id} - winner: {self.placement} - player: {self.player_obj.player_name} - match: {self.match_obj.match_id}"
+        return f"{self.id} - winner: {self.placement} - player: {self.player_obj.name} - match: {self.match_obj.match_id}"
     
 class Match(models.Model):
     match_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

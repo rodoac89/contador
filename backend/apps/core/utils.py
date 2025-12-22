@@ -135,9 +135,49 @@ def delete_match(m_id):
             return True
             
     except Match.DoesNotExist:
+        print("Match does not exist")
         return False
     except Exception as e:
+        print("Error deleting match:", e)
         return False
+
+def update_match(match, player_scores):
+    try:
+        with transaction.atomic():
+            
+            # Update match records for each player
+            for player_name, score in player_scores.items():
+                player = PlayerProfile.objects.get(name=player_name)
+                match_record = MatchRecord.objects.get(match_obj=match, player_obj=player)
+                match_record.kills = score['kills']
+                match_record.placement = score['placement']
+                match_record.save()
+            
+            # Update player total points
+            for player_name in player_scores.keys():
+                player = PlayerProfile.objects.get(name=player_name)
+                
+                # Calculate total points from all match records
+                total_points = 0
+                match_records = MatchRecord.objects.filter(player_obj=player)
+                
+                for record in match_records:
+                    points = record.kills
+                    if record.placement == 'winner':
+                        points += 3
+                    elif record.placement == 'second':
+                        points += 1
+                    total_points += points
+                
+                player.total_points = total_points
+                player.save()
+
+            return True
+
+    except Match.DoesNotExist:
+        return False
+    return False
+
 
 # Match Records Management
 def get_matches_record():

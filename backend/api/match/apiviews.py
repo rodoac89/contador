@@ -6,7 +6,7 @@ from rest_framework.status import (
     HTTP_201_CREATED
 )
 from rest_framework.response import Response
-from apps.core.utils import create_match, delete_match, get_all_matches, get_match_by_id, get_matches_record
+from apps.core.utils import create_match, delete_match, get_all_matches, get_match_by_id, get_matches_record, update_match
 from apps.core.serializers import MatchSerializer
 
 class MatchView(APIView):
@@ -34,12 +34,19 @@ class MatchView(APIView):
         if not match:
             return Response({'error': 'Match not found'}, status=HTTP_404_NOT_FOUND)
         delete_success = delete_match(match_id)
-        if not delete_success:
-            return Response({'error': 'Failed to delete match'}, status=HTTP_400_BAD_REQUEST)
-        return Response(status=HTTP_200_OK)
+        if delete_success:
+            return Response(status=HTTP_200_OK)
+        return Response(status=HTTP_400_BAD_REQUEST)
     
     def put(self, request, match_id):
-        return Response({'error': 'Not implemented'}, status=HTTP_400_BAD_REQUEST)
+        match = get_match_by_id(match_id)
+        if not match:
+            return Response({'error': 'Match not found'}, status=HTTP_404_NOT_FOUND)
+        update_success = update_match(match, request.data.get('playerScores'))
+        if update_success:
+            return Response(status=HTTP_200_OK)
+        
+        return Response(status=HTTP_400_BAD_REQUEST)
 
 
 class MatchRecordView(APIView):
