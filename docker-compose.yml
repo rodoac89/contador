@@ -5,11 +5,11 @@ services:
       dockerfile: backend.Dockerfile
     container_name: contador-backend
     environment:
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
-      POSTGRES_DB: ${POSTGRES_DB:-cpoints}
-      POSTGRES_USER: ${POSTGRES_USER:-cpoints_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mY48%#CxzE912}
-      POSTGRES_HOST: ${POSTGRES_HOST:-172.22.240.156}
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       SECRET_KEY: ${SECRET_KEY:-django-insecure-23v(z24j2ev07ihftj22&_y-mmw0)=pghp-xtq1ets=gv)wpgk}
     networks:
